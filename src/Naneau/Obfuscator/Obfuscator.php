@@ -9,6 +9,7 @@
 namespace Naneau\Obfuscator;
 
 use Naneau\Obfuscator\Obfuscator\Event\File as FileEvent;
+use Naneau\Obfuscator\Obfuscator\Event\FileError as FileErrorEvent;
 
 use PhpParser\NodeTraverserInterface as NodeTraverser;
 
@@ -76,9 +77,10 @@ class Obfuscator
      *
      * @param  string $directory
      * @param  bool   $stripWhitespace
+     * @param  bool   $ignoreError
      * @return void
      **/
-    public function obfuscate($directory)
+    public function obfuscate($directory, $stripWhitespace = false, $ignoreError = false)
     {
         foreach ($this->getFiles($directory) as $file) {
             $this->getEventDispatcher()->dispatch(
@@ -87,7 +89,12 @@ class Obfuscator
             );
 
             // Write obfuscated source
-            file_put_contents($file, $this->obfuscateFileContents($file));
+            file_put_contents($file, $this->obfuscateFileContents($file, $ignoreError));
+
+            // Strip whitespace if required
+            if ($stripWhitespace) {
+                file_put_contents($file, php_strip_whitespace($file));
+            }
         }
     }
 
@@ -225,9 +232,11 @@ class Obfuscator
      * Obfuscate a single file's contents
      *
      * @param  string $file
+     * @param  boolean $ignoreError if true, do not throw an Error and
+     *                              exit, but continue with next file
      * @return string obfuscated contents
      **/
-    private function obfuscateFileContents($file)
+    private function obfuscateFileContents($file, $ignoreError)
     {
         try {
             // Input code
@@ -242,11 +251,19 @@ class Obfuscator
 
             return "<?php\n" . $this->getPrettyPrinter()->prettyPrint($ast);
         } catch (Exception $e) {
-            throw new Exception(
-                sprintf('Could not parse file "%s"', $file),
-                null,
-                $e
-            );
+            if ($ignoreError) {
+                sprintf('Could not parse file "%s"', $file);
+                $this->getEventDispatcher()->dispatch(
+                    'obfuscator.file.error',
+                    new FileErrorEvent($file, $e->getMessage())
+                );
+            } else {
+                throw new Exception(
+                    sprintf('Could not parse file "%s"', $file),
+                    null,
+                    $e
+                );
+            }
         }
     }
 }

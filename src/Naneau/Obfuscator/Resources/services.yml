@@ -5,6 +5,8 @@ parameters:
     obfuscator.scramble_private_method.ignore: []
     obfuscator.scramble_private_property.ignore: []
     obfuscator.scramble_use.ignore: []
+    obfuscator.scramble_comments.preserve_annotations: true
+    obfuscator.scramble_comments.annotations_flavor: "generic"
 
     # Output printer
     obfuscator.printer: PhpParser\PrettyPrinter\Standard
@@ -34,12 +36,13 @@ services:
         calls:
             - [addVisitor, [@obfuscator.node_visitor.scramble_variable]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_method]]
+            - [addVisitor, [@obfuscator.node_visitor.scramble_comment]]
 
     # Variable scrambler
     obfuscator.node_visitor.scramble_variable:
         class: Naneau\Obfuscator\Node\Visitor\ScrambleVariable
         arguments:
-             - @obfuscator.scrambler
+            - @obfuscator.scrambler
         calls:
             - [addIgnore, [%obfuscator.scramble_variable.ignore%]]
 
@@ -47,7 +50,7 @@ services:
     obfuscator.node_visitor.scramble_private_method:
         class: Naneau\Obfuscator\Node\Visitor\ScramblePrivateMethod
         arguments:
-             - @obfuscator.scrambler
+            - @obfuscator.scrambler
         calls:
             - [addIgnore, [%obfuscator.scramble_private_method.ignore%]]
 
@@ -55,7 +58,7 @@ services:
     obfuscator.node_visitor.scramble_private_property:
         class: Naneau\Obfuscator\Node\Visitor\ScramblePrivateProperty
         arguments:
-             - @obfuscator.scrambler
+            - @obfuscator.scrambler
         calls:
             - [addIgnore, [%obfuscator.scramble_private_property.ignore%]]
 
@@ -63,9 +66,18 @@ services:
     obfuscator.node_visitor.scramble_use:
         class: Naneau\Obfuscator\Node\Visitor\ScrambleUse
         arguments:
-             - @obfuscator.scrambler
+            - @obfuscator.scrambler
         calls:
             - [addIgnore, [%obfuscator.scramble_use.ignore%]]
+
+    # Scramble comments
+    obfuscator.node_visitor.scramble_comment:
+        class: Naneau\Obfuscator\Node\Visitor\ScrambleComment
+        arguments:
+            - @obfuscator.scrambler
+        calls:
+            - [setPreserveAnnotations, [%obfuscator.scramble_comments.preserve_annotations%]]
+            - [setAnnotationsFlavor, [%obfuscator.scramble_comments.annotations_flavor%]]
 
     # Name resolver (needed before scramble_use)
     obfuscator.node_visitor.name_resolver:

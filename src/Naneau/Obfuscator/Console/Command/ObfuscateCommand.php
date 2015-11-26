@@ -97,7 +97,6 @@ class ObfuscateCommand extends Command
         $outputDirectory = $input->getArgument('output_directory');
 
         if (!empty($outputDirectory)) {
-
             $output->writeln(sprintf(
                 'Copying input directory <info>%s</info> to <info>%s</info>',
                 $inputDirectory,
@@ -172,14 +171,14 @@ class ObfuscateCommand extends Command
     private function copyDir($from, $to)
     {
         $this->copyDirectory($from, $to);
-        
+
         if (!is_dir($to))  {
             throw new \Exception('Could not copy directory');
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Recursively copy a directory
      *
@@ -193,11 +192,17 @@ class ObfuscateCommand extends Command
         @mkdir($dst);
         while(false !== ( $file = readdir($dir)) ) {
             if (( $file != '.' ) && ( $file != '..' )) {
-                if ( is_dir($src . '/' . $file) ) {
-                    $this->copyDirectory($src . '/' . $file,$dst . '/' . $file);
+                if ( is_dir($src . DIRECTORY_SEPARATOR . $file) ) {
+                    $this->copyDirectory(
+                        $src . DIRECTORY_SEPARATOR . $file,
+                        $dst . '/' . $file
+                    );
                 }
                 else {
-                    copy($src . '/' . $file,$dst . '/' . $file);
+                    copy(
+                        $src . DIRECTORY_SEPARATOR . $file,
+                        $dst . DIRECTORY_SEPARATOR . $file
+                    );
                 }
             }
         }

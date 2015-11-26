@@ -38,6 +38,13 @@ parameters:
         - foo
         - bar
         - baz
+
+    # Scramble comments
+    obfuscator.scramble_comments.preserve_annotations: true
+
+    # Output printer (set to Naneau\Obfuscator\PrettyPrinter\Stripping to
+    # strip whitespaces, or just pass the `leave_whitespace' option).
+    obfuscator.printer: PhpParser\PrettyPrinter\Standard
 ```
 
 You can run the obfuscator with a configuration file through

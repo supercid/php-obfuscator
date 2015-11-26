@@ -110,9 +110,6 @@ class ObfuscateCommand extends Command
             $directory = $inputDirectory;
         }
 
-        // Strip whitespace?
-        $stripWhitespace = !$input->getOption('leave_whitespace');
-
         // Show every file
         $this->getObfuscator()->getEventDispatcher()->addListener(
             'obfuscator.file',
@@ -125,7 +122,7 @@ class ObfuscateCommand extends Command
         );
 
         // Actual obfuscation
-        $this->getObfuscator()->obfuscate($directory, $stripWhitespace);
+        $this->getObfuscator()->obfuscate($directory);
     }
 
     /**
@@ -230,6 +227,17 @@ class ObfuscateCommand extends Command
             $this->getContainer()->loadFile($config);
         }
 
+        // Strip whitespace?
+        $stripWhitespace = !$input->getOption('leave_whitespace');
+
+        if ($stripWhitespace) {
+            $this->getContainer()->getContainer()->setParameter(
+                'obfuscator.printer',
+                '\Naneau\Obfuscator\PrettyPrinter\Stripping'
+            );
+        }
+
+        // Compile the container
         $this->getContainer()->getContainer()->compile();
 
         return $this;

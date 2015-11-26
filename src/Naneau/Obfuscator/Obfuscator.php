@@ -78,7 +78,7 @@ class Obfuscator
      * @param  bool   $stripWhitespace
      * @return void
      **/
-    public function obfuscate($directory, $stripWhitespace = false)
+    public function obfuscate($directory)
     {
         foreach ($this->getFiles($directory) as $file) {
             $this->getEventDispatcher()->dispatch(
@@ -88,11 +88,6 @@ class Obfuscator
 
             // Write obfuscated source
             file_put_contents($file, $this->obfuscateFileContents($file));
-
-            // Strip whitespace if required
-            if ($stripWhitespace) {
-                file_put_contents($file, php_strip_whitespace($file));
-            }
         }
     }
 
@@ -236,7 +231,7 @@ class Obfuscator
     {
         try {
             // Input code
-            $source = php_strip_whitespace($file);
+            $source = file_get_contents($file);
 
             // Get AST
             $ast = $this->getTraverser()->traverse(

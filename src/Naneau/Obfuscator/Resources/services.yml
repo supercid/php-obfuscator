@@ -6,6 +6,9 @@ parameters:
     obfuscator.scramble_private_property.ignore: []
     obfuscator.scramble_use.ignore: []
 
+    # Output printer
+    obfuscator.printer: PhpParser\PrettyPrinter\Standard
+
     # Files to parse
     obfuscator.files: "/\.php$/"
 
@@ -80,7 +83,7 @@ services:
 
     # Pretty printer
     obfuscator.pretty_printer:
-        class: PhpParser\PrettyPrinter\Standard
+        class: %obfuscator.printer%
 
     # Event dispatcher
     obfuscator.event_dispatcher:

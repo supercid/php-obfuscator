@@ -28,6 +28,6 @@ class Stripping extends \PhpParser\PrettyPrinter\Standard
 
     protected function pComments(array $comments)
     {
-        return $this->pNoIndent(parent::pComments($comments));
+        return $this->pNoIndent(trim(parent::pComments($comments)));
     }
 }

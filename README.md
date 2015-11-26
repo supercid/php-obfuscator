@@ -8,7 +8,7 @@ This library was written out of the need to obfuscate the source for a private l
 
 While this tool does not make PHP code impossible to read, it will make it significantly less legible.
 
-It is compatible with PHP 5.3, 5.4 and 5.5, but needs PHP 5.4+ to run.
+It is compatible with PHP 5.3, 5.4, 5.5 and 5.6, but needs PHP 5.4+ to run.
 
 ## Usage
 
@@ -52,3 +52,7 @@ You can run the obfuscator with a configuration file through
 ```bash
 ./bin/obfuscate obfuscate /input/directory /output/directory --config=/foo/bar/config.yml
 ```
+
+### Samples
+
+The `samples/` directory contains some example code. They have been generated using default configuration.

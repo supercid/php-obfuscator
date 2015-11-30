@@ -16,12 +16,12 @@ use Naneau\Obfuscator\Node\Visitor\Scrambler as ScramblerVisitor;
 use Naneau\Obfuscator\StringScrambler;
 
 use PhpParser\Node;
-
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\New_ as NewNode;
+use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Expr\MethodCall;
-
-use PhpParser\Node\Expr\Variable;
 
 /**
  * ScramblePrivateMethod
@@ -66,7 +66,7 @@ class ScramblePrivateMethod extends ScramblerVisitor
      * Check all variable nodes
      *
      * @param  Node $node
-     * @return void
+     * @return null|Node Scrambled node, if needed
      **/
     public function enterNode(Node $node)
     {
@@ -77,6 +77,11 @@ class ScramblePrivateMethod extends ScramblerVisitor
         // Scramble calls
         if ($node instanceof MethodCall) {
 
+            // Method call is not calling private methods
+            if (!$this->isPrivateMethodCall($node)) {
+                return;
+            }
+
             // Node wasn't renamed
             if (!$this->isRenamed($node->name)) {
                 return;
@@ -85,6 +90,48 @@ class ScramblePrivateMethod extends ScramblerVisitor
             // Scramble usage
             return $this->scramble($node);
         }
+    }
+
+    /**
+     * Check if a given method call is calling a private method
+     *
+     * @param  MethodCall $node
+     * @return bool
+     **/
+    private function isPrivateMethodCall(MethodCall $node)
+    {
+        $meta = $node->meta;
+
+        // It's never a private method call outside a class.
+        if (!$meta->class) {
+            return false;
+        }
+
+        // $this always points to current instance.
+        if ($node->var instanceof Variable && $node->var->name === "this") {
+            return true;
+        }
+
+        // A variable is pointing to same instance or same class.
+        if ($node->var instanceof Variable) {
+            if (isset($meta->scope[$node->var->name])) {
+                if ($meta->scope[$node->var->name] instanceof Name) {
+                    if ($meta->scope[$node->var->name]->toString() === $meta->class->name) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // Same class is created and directly used.
+        if ($node->var instanceof NewNode && $node->var->class instanceof Name) {
+            if ($meta->class->name === $node->var->class->toString()) {
+                return true;
+            }
+        }
+
+        // Not sure what type of object is, so return false.
+        return false;
     }
 
     /**

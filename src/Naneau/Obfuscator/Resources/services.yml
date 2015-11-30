@@ -34,9 +34,15 @@ services:
     obfuscator.node_traverser:
         class: PhpParser\NodeTraverser
         calls:
+            - [addVisitor, [@obfuscator.node_visitor.meta]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_variable]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_method]]
+            - [addVisitor, [@obfuscator.node_visitor.scramble_private_property]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_comment]]
+
+    # Meta
+    obfuscator.node_visitor.meta:
+        class: Naneau\Obfuscator\Node\Visitor\Meta
 
     # Variable scrambler
     obfuscator.node_visitor.scramble_variable:

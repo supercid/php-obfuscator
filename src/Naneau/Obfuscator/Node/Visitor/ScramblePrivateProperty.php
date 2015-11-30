@@ -82,11 +82,40 @@ class ScramblePrivateProperty extends ScramblerVisitor
                 return;
             }
 
+            // Method call is not calling private methods
+            if (!$this->isPrivateProperty($node)) {
+                return;
+            }
+
             if ($this->isRenamed($node->name)) {
                 $node->name = $this->getNewName($node->name);
                 return $node;
             }
         }
+    }
+
+    /**
+     * Check if a given variable is a private property.
+     *
+     * @param  Property $node
+     * @return bool
+     **/
+    private function isPrivateProperty(PropertyFetch $node)
+    {
+        $meta = $node->meta;
+
+        // It's never a private property outside a class.
+        if (!$meta->class) {
+            return false;
+        }
+
+        // $this always points to current instance.
+        if ($node->var instanceof Variable && $node->var->name === "this") {
+            return true;
+        }
+
+        // Not sure what type of object is, so return false.
+        return false;
     }
 
     /**

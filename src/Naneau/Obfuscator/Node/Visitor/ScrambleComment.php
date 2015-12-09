@@ -56,7 +56,7 @@ class ScrambleComment extends ScramblerVisitor
         }
 
         // Check if annotations should be preserved. Only nodes with actual
-        // doccomment blocks are processed.
+        // doc comment blocks are processed.
         $comments = [];
 
         if ($this->preserveAnnotations) {
@@ -65,9 +65,13 @@ class ScrambleComment extends ScramblerVisitor
             if ($docComment) {
                 $text = $docComment->getText();
 
-                // Verify that it is a real comment.
+                // Check if it is a doc comment.
                 if (strpos($text, "/**") !== false) {
-                    $comments = [ new Comment($this->stripComment($text)) ];
+                    $text = $this->stripComment($text);
+
+                    if ($text) {
+                        $comments = [ new Comment($text) ];
+                    }
                 }
             }
         }
@@ -79,7 +83,7 @@ class ScrambleComment extends ScramblerVisitor
     }
 
     /**
-     * Process a doccomment block.
+     * Process a doc comment block.
      *
      * @param string $text
      * @return string
@@ -106,10 +110,12 @@ class ScrambleComment extends ScramblerVisitor
             }
 
             // Re-join the lines
-            if ($this->annotationsFlavor == "generic") {
-                return "/** " . implode(" ", $lines) . " */";
-            } elseif ($this->annotationsFlavor == "generic-newline") {
-                return "/**\n" . implode("\n", $lines) . "\n */";
+            if ($lines) {
+                if ($this->annotationsFlavor == "generic") {
+                    return "/** " . implode(" ", $lines) . " */";
+                } elseif ($this->annotationsFlavor == "generic-newline") {
+                    return "/**\n" . implode("\n", $lines) . "\n */";
+                }
             }
         }
     }

@@ -14,6 +14,9 @@ parameters:
     # Files to parse
     obfuscator.files: "/\.php$/"
 
+    # PHP version (1 = Prefer PHP7, 2 = Prefer PHP5, 3 = PHP7, 4 = PHP5)
+    obfuscator.language: 1
+
 services:
 
     # Obfuscator
@@ -85,19 +88,16 @@ services:
             - [setPreserveAnnotations, [%obfuscator.scramble_comments.preserve_annotations%]]
             - [setAnnotationsFlavor, [%obfuscator.scramble_comments.annotations_flavor%]]
 
-    # Name resolver (needed before scramble_use)
-    obfuscator.node_visitor.name_resolver:
-        class: PhpParser\NodeVisitor\NameResolver
+    # Parser factory
+    obfuscator.parser_factory:
+        class: PhpParser\ParserFactory
 
     # Parser
     obfuscator.parser:
         class: PhpParser\Parser
+        factory: [@obfuscator.parser_factory, create]
         arguments:
-            - @obfuscator.lexer
-
-    # Lexer
-    obfuscator.lexer:
-        class: PhpParser\Lexer
+            - %obfuscator.language%
 
     # Pretty printer
     obfuscator.pretty_printer:

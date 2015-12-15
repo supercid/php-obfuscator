@@ -60,8 +60,8 @@ The `samples/` directory contains some example code. They have been generated us
 
 ### Limitations
 
-PHP is not a statically typed. This means that, in many cases, it is impossible to infer the type of an expression. Without this information, it is hard to tell when a variable can be safely renamed or not. Therefore, only private methods are renamed, because this obfuscator cannot tell/predict whether a protected or public method is/will be used outside the current scope.
+PHP is not a statically typed language. This means that, in many cases, it is impossible to infer the type of an expression. Without this information, it is hard to tell whether a variable, methods or class can be safely renamed or not. Therefore, only private members are renamed, because this obfuscator cannot tell/predict whether a protected or public method is/will be used outside the current file.
 
-Where possible, basic scope tracking is used to infer types. Wherever this doesn't work, you are suggested to ignore variables and/or methods.
+Where possible, basic scope tracking is used to infer types of variables. Wherever this doesn't work, you are suggested to ignore variables and/or methods.
 
 For an example, see `samples/private_public_methods.in.php`.

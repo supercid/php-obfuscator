@@ -55,8 +55,7 @@ You can run the obfuscator with a configuration file through
 
 ### Samples
 
-The `samples/` directory contains some example code. They have been generated using default configuration.
-
+The `samples/` directory contains some example code. They have been generated using default configuration, but white spaces are left in place for clarity.
 
 ### Limitations
 

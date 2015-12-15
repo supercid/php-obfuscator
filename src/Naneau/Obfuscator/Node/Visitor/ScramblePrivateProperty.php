@@ -21,6 +21,8 @@ use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\Property;
 
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Expr\ClassConstFetch;
 
 use PhpParser\Node\Expr\Variable;
 
@@ -76,14 +78,13 @@ class ScramblePrivateProperty extends ScramblerVisitor
      **/
     public function enterNode(Node $node)
     {
-        if ($node instanceof PropertyFetch) {
-
+        if ($node instanceof PropertyFetch || $node instanceof StaticPropertyFetch) {
             if (!is_string($node->name)) {
                 return;
             }
 
-            // Method call is not calling private methods
-            if (!$this->isPrivateProperty($node)) {
+            // Fetch is not using a local property or class constant
+            if (!$this->isLocal($node)) {
                 return;
             }
 
@@ -95,26 +96,43 @@ class ScramblePrivateProperty extends ScramblerVisitor
     }
 
     /**
-     * Check if a given variable is a private property.
+     * Check if a given property or constant fetch is local.
      *
-     * @param  Property $node
+     * @param  Node $node
      * @return bool
      **/
-    private function isPrivateProperty(PropertyFetch $node)
+    private function isLocal(Node $node)
     {
         $meta = $node->meta;
 
-        // It's never a private property outside a class.
+        // It's never a local property outside a class.
         if (!$meta->class) {
             return false;
         }
 
         // $this always points to current instance.
-        if ($node->var instanceof Variable && $node->var->name === "this") {
-            return true;
+        if ($node instanceof PropertyFetch) {
+            if ($node->var instanceof Variable && $node->var->name === "this") {
+                return true;
+            }
+        } elseif ($node instanceof StaticPropertyFetch) {
+            // Something like $var::static, which evaluates $var at runtime.
+            if ($node->class instanceof Variable) {
+                return false;
+            }
+
+            // self is always poiting to current class.
+            if ($node->class->toString() === "self") {
+                return true;
+            }
+
+            // Same class name is always pointing to local variables.
+            if ($node->class->toString() == $meta->class->namespacedName->toString()) {
+                return true;
+            }
         }
 
-        // Not sure what type of object is, so return false.
+        // Not sure if property or constant fetch is local.
         return false;
     }
 
@@ -129,7 +147,7 @@ class ScramblePrivateProperty extends ScramblerVisitor
         foreach ($nodes as $node) {
             // Scramble the private method definitions
             if ($node instanceof Property && ($node->type & ClassNode::MODIFIER_PRIVATE)) {
-                foreach($node->props as $property) {
+                foreach ($node->props as $property) {
 
                     // Record original name and scramble it
                     $originalName = $property->name;

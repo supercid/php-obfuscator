@@ -61,7 +61,7 @@ services:
     obfuscator.node_visitor.meta:
         class: Naneau\Obfuscator\Node\Visitor\Meta
 
-    # Name resolver (needed before scramble_use)
+    # Name resolver (needed before several scrambles to reason about locality)
     obfuscator.node_visitor.name_resolver:
         class: PhpParser\NodeVisitor\NameResolver
 

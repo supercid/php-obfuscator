@@ -17,6 +17,7 @@ use Naneau\Obfuscator\StringScrambler;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\New_ as NewNode;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
@@ -75,10 +76,10 @@ class ScramblePrivateMethod extends ScramblerVisitor
         }
 
         // Scramble calls
-        if ($node instanceof MethodCall) {
+        if ($node instanceof MethodCall || $node instanceof StaticCall) {
 
-            // Method call is not calling private methods
-            if (!$this->isPrivateMethodCall($node)) {
+            // Method call or static call is not calling private methods
+            if (!$this->isLocal($node)) {
                 return;
             }
 
@@ -93,44 +94,56 @@ class ScramblePrivateMethod extends ScramblerVisitor
     }
 
     /**
-     * Check if a given method call is calling a private method
+     * Check if a given method call is calling a a local method.
      *
-     * @param  MethodCall $node
+     * @param  Node $node
      * @return bool
      **/
-    private function isPrivateMethodCall(MethodCall $node)
+    private function isLocal(Node $node)
     {
         $meta = $node->meta;
 
-        // It's never a private method call outside a class.
+        // It's never a local method call outside a class.
         if (!$meta->class) {
             return false;
         }
 
-        // $this always points to current instance.
-        if ($node->var instanceof Variable && $node->var->name === "this") {
-            return true;
-        }
+        if ($node instanceof MethodCall) {
+            // $this always points to current instance.
+            if ($node->var instanceof Variable && $node->var->name === "this") {
+                return true;
+            }
 
-        // A variable is pointing to same instance or same class.
-        if ($node->var instanceof Variable) {
-            if (isset($meta->scope[$node->var->name])) {
-                if ($meta->scope[$node->var->name] instanceof Name) {
-                    if ($meta->scope[$node->var->name]->toString() === $meta->class->name) {
-                        return true;
+            // A variable is pointing to same instance or same class.
+            if ($node->var instanceof Variable) {
+                if (isset($meta->scope[$node->var->name])) {
+                    if ($meta->scope[$node->var->name] instanceof Name) {
+                        if ($meta->scope[$node->var->name]->toString() === $meta->class->name) {
+                            return true;
+                        }
                     }
                 }
             }
-        }
 
-        // Same class is created and directly used.
-        if ($node->var instanceof NewNode && $node->var->class instanceof Name) {
-            if ($meta->class->name === $node->var->class->toString()) {
+            // Same class is created and directly used.
+            if ($node->var instanceof NewNode && $node->var->class instanceof Name) {
+                if ($meta->class->name === $node->var->class->toString()) {
+                    return true;
+                }
+            }
+        } elseif ($node instanceof StaticCall) {
+            // self is always poiting to current class.
+            if ($node->class->toString() === "self") {
+                return true;
+            }
+
+            // Same class name is always pointing to local variables.
+            if ($node->class->toString() == $meta->class->namespacedName->toString()) {
                 return true;
             }
         }
 
-        // Not sure what type of object is, so return false.
+        // Not sure is method call is local.
         return false;
     }
 

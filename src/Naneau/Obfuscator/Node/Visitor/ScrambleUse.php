@@ -244,14 +244,15 @@ class ScrambleUse extends ScramblerVisitor
      */
     private function rename(Name $name, Meta $meta)
     {
-        // Skip references to self.
-        if ($name->toString() == "self") {
+        $originalName = $name->toString();
+
+        // Skip references to self or parent.
+        if ($originalName == "self" || $originalName == "parent") {
             return $name;
         }
 
         // Either add-as-use or fix uses.
         if ($this->addAsUse) {
-            $originalName = $name->toString();
 
             // Check if there is a existing rename.
             if (!$this->isRenamed($originalName) || $this->doNotReuse) {

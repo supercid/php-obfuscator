@@ -37,10 +37,10 @@ class StringScrambler
     {
         if ($salt === null) {
             $this->setSalt(
-                md5(microtime(true) . rand(0,1))
+                md5(microtime(true) . rand(0, 1))
             );
-        } else { 
-            $this->setSalt($salt); 
+        } else {
+            $this->setSalt($salt);
         }
     }
 

@@ -24,17 +24,24 @@ services:
         class: Naneau\Obfuscator\Obfuscator
         calls:
             - [setParser, [@obfuscator.parser]]
-            - [setTraverser, [@obfuscator.node_traverser]]
             - [setPrettyPrinter, [@obfuscator.pretty_printer]]
             - [setEventDispatcher, [@obfuscator.event_dispatcher]]
             - [setFileRegex, [%obfuscator.files%]]
+            - [addTraverser, [@obfuscator.first_pass.node_traverser]]
+            - [addTraverser, [@obfuscator.second_pass.node_traverser]]
 
     # String scrambler
     obfuscator.scrambler:
         class: Naneau\Obfuscator\StringScrambler
 
     # Node traverser
-    obfuscator.node_traverser:
+    obfuscator.first_pass.node_traverser:
+        class: PhpParser\NodeTraverser
+        calls:
+            - [addVisitor, [@obfuscator.node_visitor.name_resolver]]
+
+    # Node traverser
+    obfuscator.second_pass.node_traverser:
         class: PhpParser\NodeTraverser
         calls:
             - [addVisitor, [@obfuscator.node_visitor.meta]]
@@ -43,9 +50,13 @@ services:
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_property]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_comment]]
 
-    # Meta
+    # Scope (adds namespace, class and scope information)
     obfuscator.node_visitor.meta:
         class: Naneau\Obfuscator\Node\Visitor\Meta
+
+    # Name resolver (needed before scramble_use)
+    obfuscator.node_visitor.name_resolver:
+        class: PhpParser\NodeVisitor\NameResolver
 
     # Variable scrambler
     obfuscator.node_visitor.scramble_variable:

@@ -44,11 +44,11 @@ class Obfuscator
     private $parser;
 
     /**
-     * the node traverser
+     * the node traversers
      *
-     * @var NodeTraverser
+     * @var NodeTraverser[]
      */
-    private $traverser;
+    private $traversers = [];
 
     /**
      * the "pretty" printer
@@ -119,9 +119,9 @@ class Obfuscator
      *
      * @return NodeTraverser
      */
-    public function getTraverser()
+    public function getTraversers()
     {
-        return $this->traverser;
+        return $this->traversers;
     }
 
     /**
@@ -130,9 +130,9 @@ class Obfuscator
      * @param  NodeTraverser $traverser
      * @return Obfuscator
      */
-    public function setTraverser(NodeTraverser $traverser)
+    public function addTraverser(NodeTraverser $traverser)
     {
-        $this->traverser = $traverser;
+        $this->traversers[] = $traverser;
 
         return $this;
     }
@@ -234,9 +234,11 @@ class Obfuscator
             $source = file_get_contents($file);
 
             // Get AST
-            $ast = $this->getTraverser()->traverse(
-                $this->getParser()->parse($source)
-            );
+            $ast = $this->getParser()->parse($source);
+
+            foreach ($this->getTraversers() as $traverser) {
+                $ast = $traverser->traverse($ast);
+            }
 
             return "<?php\n" . $this->getPrettyPrinter()->prettyPrint($ast);
         } catch (Exception $e) {

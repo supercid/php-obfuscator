@@ -23,7 +23,9 @@ use PhpParser\Node\Param;
 
 use PhpParser\Node\Stmt\Class_ as ClassStatement;
 use PhpParser\Node\Stmt\Use_ as UseStatement;
-use PhpParser\Node\Stmt\UseUse as UseUseStatement;
+use PhpParser\Node\Stmt\GroupUse;
+use PhpParser\Node\Stmt\UseUse;
+use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\Node\Stmt\StaticVar;
 
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -31,11 +33,15 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\New_ as NewExpression;
 use PhpParser\Node\Expr\Instanceof_ as InstanceOfExpression;
+use PhpParser\Node\Stmt\Namespace_ as NamespaceNode;
 
 use PhpParser\Node\Expr\Variable;
 
 /**
  * ScrambleUse
+ *
+ * This scrambler assumes that all names are fully resolved by the
+ * NameResolver.
  *
  * @category        Naneau
  * @package         Obfuscator
@@ -43,15 +49,23 @@ use PhpParser\Node\Expr\Variable;
  */
 class ScrambleUse extends ScramblerVisitor
 {
-    use TrackingRenamerTrait;
     use SkipTrait;
+    use TrackingRenamerTrait;
 
     /**
-     * Active class
-     *
-     * @var ClassStatement|bool
-     **/
-    private $classNode;
+     * @var bool Add uses of fully qualified in-line uses.
+     */
+    private $addAsUse;
+
+    /**
+     * @var bool Do not reuse an use statement. A second use is added if needed.
+     */
+    private $doNotReuse;
+
+    /**
+     * @var array List of uses to insert (in the leaveNode method).
+     */
+    private $inserts;
 
     /**
      * Before node traversal
@@ -64,8 +78,8 @@ class ScrambleUse extends ScramblerVisitor
         // Reset renamed list
         $this->resetRenamed();
 
-        // Find the class node
-        $this->classNode = $this->findClass($nodes);
+        // Reset list of inserts
+        $this->inserts = [];
 
         // Scan for use statements
         $this->scanUse($nodes);
@@ -74,40 +88,43 @@ class ScrambleUse extends ScramblerVisitor
     }
 
     /**
+     * Add use statements that are global (e.g. not in a namespace).
+     *
+     * @param  Node[] $nodes
+     * @return array
+     */
+    public function afterTraverse(array $nodes)
+    {
+        $key = "";
+
+        if (isset($this->inserts[$key])) {
+            $nodes = array_merge($this->inserts[$key], $nodes);
+
+            return $nodes;
+        }
+    }
+
+    /**
      * Check all variable nodes
      *
      * @param  Node $node
      * @return void
-     **/
+     */
     public function enterNode(Node $node)
     {
         // Class statements
         if ($node instanceof ClassStatement) {
             // Classes that extend another class
             if ($node->extends !== null) {
-                $extends = $node->extends->toString();
-                if ($this->isRenamed($extends)) {
-                    $node->extends = new Name($this->getNewName($extends));
-                }
+                $node->extends = $this->rename($node->extends, $node->meta);
             }
 
             // Classes that implement an interface
-            if ($node->implements !== null && count($node->implements) > 0) {
+            if ($node->implements && count($node->implements) > 0) {
+                $implements = [];
 
-                $implements = array();
-
-                foreach($node->implements as $implementsName) {
-
-                    // Old name (as string)
-                    $oldName = $implementsName->toString();
-
-                    if ($this->isRenamed($oldName)) {
-                        // If renamed, set new one
-                        $implements[] = new Name($this->getNewName($oldName));
-                    } else {
-                        // If not renamed, pass old one
-                        $implements[] = $implementsName;
-                    }
+                foreach ($node->implements as $implement) {
+                    $implements[] = $this->rename($implement, $node->meta);
                 }
 
                 $node->implements = $implements;
@@ -118,20 +135,12 @@ class ScrambleUse extends ScramblerVisitor
 
         // Param rename
         if ($node instanceof Param && $node->type instanceof Name) {
-
-            // Name
-            $name = $node->type->toString();
-
-            // Has it been renamed?
-            if ($this->isRenamed($name)) {
-                $node->type = $this->getNewName($name);
-                return $node;
-            }
+            $node->type = $this->rename($node->type, $node->meta);
+            return $node;
         }
 
         // Static call or constant lookup on class
-        if (
-            $node instanceof ClassConstFetch
+        if ($node instanceof ClassConstFetch
             || $node instanceof StaticCall
             || $node instanceof StaticPropertyFetch
             || $node instanceof StaticVar
@@ -139,26 +148,42 @@ class ScrambleUse extends ScramblerVisitor
             || $node instanceof InstanceOfExpression
         ) {
 
-            // We need to be in a class for this to work
-            if (empty($this->classNode)) {
-                return;
-            }
-
             // We need a name
             if (!($node->class instanceof Name)) {
                 return;
             }
 
-            // Class name
-            $name = $node->class->toString();
+            $node->class = $this->rename($node->class, $node->meta);
+            return $node;
+        }
 
-            if ($name === $this->classNode->name) {
-                return;
+        // Trait uses
+        if ($node instanceof TraitUse) {
+            $traits = [];
+
+            foreach ($node->traits as $trait) {
+                $traits[] = $this->rename($trait, $node->meta);
             }
 
-            // Has it been renamed?
-            if ($this->isRenamed($name)) {
-                $node->class = new Name($this->getNewName($name));
+            $node->traits = $traits;
+            return $node;
+        }
+    }
+
+    /**
+     * Add use statements to namespace statements.
+     *
+     * @param  Node $node
+     * @return void
+     */
+    public function leaveNode(Node $node)
+    {
+        if ($node instanceof NamespaceNode) {
+            $key = $node->name->toString();
+
+            if (isset($this->inserts[$key])) {
+                $node->stmts = array_merge($this->inserts[$key], $node->stmts);
+
                 return $node;
             }
         }
@@ -174,31 +199,18 @@ class ScrambleUse extends ScramblerVisitor
     {
         foreach ($nodes as $node) {
             // Scramble the private method definitions
-            if ($node instanceof UseStatement) {
-                foreach($node->uses as $useNode) {
-
+            if ($node instanceof UseStatement || $node instanceof GroupUse) {
+                foreach ($node->uses as $useNode) {
                     // Record original name and scramble it
-                    $originalName = $useNode->name->toString();
-
-                    // Prefix all classes with underscores, but don't modify them further
-                    $rename =
-                        strpos($originalName, '_') === false
-                        &&
-                        count($useNode->name->parts) > 1;
-
-                    if (!$rename) {
-                        $useNode->name = new Name(
-                            '\\' . $useNode->name
-                        );
-
-                        continue;
+                    if ($node instanceof GroupUse) {
+                        $originalName = $node->prefix . "\\" . $useNode->name->toString();
+                    } else {
+                        $originalName = $useNode->name->toString();
                     }
 
                     // Scramble into new use name
                     $newName = $this->scrambleString(
-                        $originalName
-                        . '-'
-                        . $useNode->alias
+                        $originalName . '-' . $useNode->alias
                     );
 
                     // Record renaming of full class
@@ -220,27 +232,118 @@ class ScrambleUse extends ScramblerVisitor
     }
 
     /**
-     * Find (the first) class node in a set of nodes
+     * Rename a given name node.
      *
-     * @param array $nodes
-     * @return ClassStatement|bool returns falls if no class can be found
-     **/
-    private function findClass(array $nodes)
+     * When $this->addAsUse, a new use statement is added for each name that is
+     * not renamed.
+     *
+     * @param Name $name Name node to rename.
+     * @param Meta $meta Node meta information.
+     * @return Name Renamed node if renamed, otherwise original.
+     */
+    private function rename(Name $name, Meta $meta)
     {
-        foreach($nodes as $node) {
-            if ($node instanceof ClassStatement) {
-                return $node;
+        // Skip references to self.
+        if ($name->toString() == "self") {
+            return $name;
+        }
+
+        // Either add-as-use or fix uses.
+        if ($this->addAsUse) {
+            $originalName = $name->toString();
+
+            // Check if there is a existing rename.
+            if (!$this->isRenamed($originalName) || $this->doNotReuse) {
+                $scrambledName = $this->scrambleString($originalName . uniqid());
+                $this->renamed($originalName, $scrambledName);
+
+                // A new use statement is needed for this rename. Add it to
+                // the current namespace.
+                if ($meta->namespace) {
+                    $key = $meta->namespace->name->toString();
+                } else {
+                    $key = "";
+                }
+
+                if (!isset($this->inserts[$key])) {
+                    $this->inserts[$key] = [];
+                }
+
+                $this->inserts[$key][] = new UseStatement([
+                    new UseUse(new Name($originalName), $scrambledName)
+                ]);
             }
 
-            if (isset($node->stmts) && is_array($node->stmts)) {
-                $class = $this->findClass($node->stmts);
+            return new Name($this->getNewName($originalName));
+        } else {
+            // See if (a subset of) parts matches a renamed one. For instance,
+            // A\B\C\D may have A\B renamed, which will eventually lead to
+            // Renamed\C\D.
+            $clonedName = clone $name;
+            $removed = [];
 
-                if ($class instanceof ClassStatement) {
-                    return $class;
+            while ($clonedName->parts) {
+                $originalName = $clonedName->toString();
+
+                if ($this->isRenamed($originalName)) {
+                    array_unshift($removed, $this->getNewName($originalName));
+                    return new Name($removed);
                 }
+
+                // Remove one name from the parts list and try again.
+                $removed[] = array_pop($clonedName->parts);
             }
         }
 
-        return false;
+        // No luck.
+        return $name;
+    }
+
+    /**
+     * Get the value of Add As Use
+     *
+     * @return bool Add uses of fully qualified in-line uses.
+     */
+    public function getAddAsUse()
+    {
+        return $this->addAsUse;
+    }
+
+    /**
+     * Set the value of Add As Use
+     *
+     * @param bool $addAsUse Add uses of fully qualified in-line uses.
+     *
+     * @return self
+     */
+    public function setAddAsUse($addAsUse)
+    {
+        $this->addAsUse = $addAsUse;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of Do Not Reuse
+     *
+     * @return bool Do not reuse an use statement. A second use is added if needed.
+     */
+    public function getDoNotReuse()
+    {
+        return $this->doNotReuse;
+    }
+
+    /**
+     * Set the value of Do Not Reuse
+     *
+     * @param bool $doNotReuse Do not reuse an use statement. A second use is added if needed.
+     *
+     * @return self
+     */
+    public function setDoNotReuse($doNotReuse)
+    {
+        $this->doNotReuse = $doNotReuse;
+
+        return $this;
     }
 }

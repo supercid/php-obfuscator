@@ -6,7 +6,13 @@ parameters:
     obfuscator.scramble_private_property.ignore: []
     obfuscator.scramble_use.ignore: []
     obfuscator.scramble_comments.preserve_annotations: true
+
+    # Specific options for comment scrambler
     obfuscator.scramble_comments.annotations_flavor: "generic"
+
+    # Specific options for the use scrambler
+    obfuscator.scramble_use.add_as_use: true
+    obfuscator.scramble_use.do_not_reuse: false
 
     # Output printer
     obfuscator.printer: PhpParser\PrettyPrinter\Standard
@@ -48,6 +54,7 @@ services:
             - [addVisitor, [@obfuscator.node_visitor.scramble_variable]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_method]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_property]]
+            - [addVisitor, [@obfuscator.node_visitor.scramble_use]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_comment]]
 
     # Scope (adds namespace, class and scope information)
@@ -89,6 +96,8 @@ services:
             - @obfuscator.scrambler
         calls:
             - [addIgnore, [%obfuscator.scramble_use.ignore%]]
+            - [setAddAsUse, [%obfuscator.scramble_use.add_as_use%]]
+            - [setDoNotReuse, [%obfuscator.scramble_use.do_not_reuse%]]
 
     # Scramble comments
     obfuscator.node_visitor.scramble_comment:

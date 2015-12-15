@@ -83,4 +83,6 @@ PHP is not a statically typed language. This means that, in many cases, it is im
 
 Where possible, basic scope tracking is used to infer types of variables. Wherever this doesn't work, you are suggested to ignore variables and/or methods.
 
+Code that is using methods such as `call_user_func[_array]` or `is_callable` on private members will not work without ignoring these members.
+
 For an example, see `samples/private_public_methods.in.php`.

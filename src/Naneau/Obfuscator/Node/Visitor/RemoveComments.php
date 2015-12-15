@@ -1,6 +1,6 @@
 <?php
 /**
- * ScrambleComment.php
+ * RemoveComments.php
  *
  * @category        Naneau
  * @package         Obfuscator
@@ -9,24 +9,22 @@
 
 namespace Naneau\Obfuscator\Node\Visitor;
 
-use Naneau\Obfuscator\Node\Visitor\Scrambler as ScramblerVisitor;
-use Naneau\Obfuscator\StringScrambler;
-
 use PhpParser\Node;
+use PhpParser\NodeVisitorAbstract;
 use PhpParser\Comment;
 
 use \InvalidArgumentException;
 
 /**
- * ScrambleComment
+ * RemoveComments
  *
- * Renames parameters
+ * Removes comments, optionally preserving annotations.
  *
  * @category        Naneau
  * @package         Obfuscator
  * @subpackage      NodeVisitor
  */
-class ScrambleComment extends ScramblerVisitor
+class RemoveComments extends NodeVisitorAbstract
 {
     /**
      * Preserve annotations?

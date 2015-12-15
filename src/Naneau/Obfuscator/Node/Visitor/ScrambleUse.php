@@ -63,7 +63,8 @@ class ScrambleUse extends ScramblerVisitor
     private $doNotReuse;
 
     /**
-     * @var array List of uses to insert (in the leaveNode method).
+     * @var array List of use statements to insert (in the leaveNode and
+     *            afterTraverse method).
      */
     private $inserts;
 

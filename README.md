@@ -8,7 +8,7 @@ This library was written out of the need to obfuscate the source for a private l
 
 While this tool does not make PHP code impossible to read, it will make it significantly less legible.
 
-It is compatible with PHP 5.3, 5.4, 5.5, 5.6 and 7.0, but needs PHP 5.4+ to run.
+It is compatible with PHP 5.2 - 7.0, but needs PHP 5.4+ to run.
 
 ## Usage
 
@@ -22,7 +22,7 @@ If you've installed this package through [Composer](https://getcomposer.org), yo
 
 ### Configuration
 
-You may find that you'll need to prevent certain variables and methods from being renamed. In this case you can create a simple YAML configuration file
+You may find that you'll need to prevent certain variables and methods from being renamed, or to disable certain features. In this case you can create a simple YAML configuration file:
 
 ```yaml
 parameters:
@@ -39,12 +39,32 @@ parameters:
         - bar
         - baz
 
+    # Ignore certain private property names
+    obfuscator.scramble_private_property.ignore: []
+
+    # Ignore certain use statements
+    obfuscator.scramble_use.ignore: []
+
+    # When using A\B\C, but referring to C\D, add a use statement for hiding
+    # C\D. Otherwise, it will be X\D, where X is an alias.
+    obfuscator.scramble_use.add_as_use: true
+
+    # Do not reuse a reference to a use statement twice. In other words, given
+    # A\B\C and a second A\B\C, it will resolve to X and Y instead of X and X.
+    obfuscator.scramble_use.do_not_reuse: false
+
     # Scramble comments
-    obfuscator.scramble_comments.preserve_annotations: true
+    obfuscator.remove_comments.preserve_annotations: true
+
+    # Annotations flavor. Generic is the most common type of annotation syntax.
+    obfuscator.remove_comments.annotations_flavor: "generic"
 
     # Output printer (set to Naneau\Obfuscator\PrettyPrinter\Stripping to
-    # strip whitespaces, or just pass the `leave_whitespace' option).
+    # strip white spaces, or just pass the `leave_whitespace' option).
     obfuscator.printer: PhpParser\PrettyPrinter\Standard
+
+    # PHP version (1 = Prefer PHP7, 2 = Prefer PHP5, 3 = PHP7, 4 = PHP5)
+    obfuscator.language: 1
 ```
 
 You can run the obfuscator with a configuration file through
@@ -55,7 +75,7 @@ You can run the obfuscator with a configuration file through
 
 ### Samples
 
-The `samples/` directory contains some example code. They have been generated using default configuration, but white spaces are left in place for clarity.
+The `samples/` directory contains some example code. They have been generated using default configuration, but white spaces are left in place for clarity. The samples only demonstrate the obfuscation techniques, thus may not be runnable.
 
 ### Limitations
 

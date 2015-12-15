@@ -8,16 +8,16 @@ function foo()
     return 42;
 }
 
-// This will disappear too.
+// This will disappear.
 function bar()
 {
     return 42;
 }
 
 /**
- * This will.
+ * This will disappear.
  *
- * @Important but this will not.
+ * @Important but this will not disappear.
  */
 function baz()
 {

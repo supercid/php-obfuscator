@@ -5,10 +5,10 @@ parameters:
     obfuscator.scramble_private_method.ignore: []
     obfuscator.scramble_private_property.ignore: []
     obfuscator.scramble_use.ignore: []
-    obfuscator.scramble_comments.preserve_annotations: true
 
-    # Specific options for comment scrambler
-    obfuscator.scramble_comments.annotations_flavor: "generic"
+    # Specific options for comment remover
+    obfuscator.remove_comments.preserve_annotations: true
+    obfuscator.remove_comments.annotations_flavor: "generic"
 
     # Specific options for the use scrambler
     obfuscator.scramble_use.add_as_use: true
@@ -55,7 +55,7 @@ services:
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_method]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_private_property]]
             - [addVisitor, [@obfuscator.node_visitor.scramble_use]]
-            - [addVisitor, [@obfuscator.node_visitor.scramble_comment]]
+            - [addVisitor, [@obfuscator.node_visitor.remove_comments]]
 
     # Scope (adds namespace, class and scope information)
     obfuscator.node_visitor.meta:
@@ -100,13 +100,13 @@ services:
             - [setDoNotReuse, [%obfuscator.scramble_use.do_not_reuse%]]
 
     # Scramble comments
-    obfuscator.node_visitor.scramble_comment:
-        class: Naneau\Obfuscator\Node\Visitor\ScrambleComment
+    obfuscator.node_visitor.remove_comments:
+        class: Naneau\Obfuscator\Node\Visitor\RemoveComments
         arguments:
             - @obfuscator.scrambler
         calls:
-            - [setPreserveAnnotations, [%obfuscator.scramble_comments.preserve_annotations%]]
-            - [setAnnotationsFlavor, [%obfuscator.scramble_comments.annotations_flavor%]]
+            - [setPreserveAnnotations, [%obfuscator.remove_comments.preserve_annotations%]]
+            - [setAnnotationsFlavor, [%obfuscator.remove_comments.annotations_flavor%]]
 
     # Parser factory
     obfuscator.parser_factory:

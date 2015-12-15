@@ -39,8 +39,8 @@ use PhpParser\Node\Expr\Variable;
  */
 class ScramblePrivateProperty extends ScramblerVisitor
 {
-    use TrackingRenamerTrait;
     use SkipTrait;
+    use TrackingRenamerTrait;
 
     /**
      * Constructor

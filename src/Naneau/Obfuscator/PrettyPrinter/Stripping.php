@@ -11,7 +11,8 @@ namespace Naneau\Obfuscator\PrettyPrinter;
 /**
  * Stripping
  *
- * A pretty printer that strips all newlines, but preserves indents.
+ * A pretty printer that strips all newlines, but preserves indents where
+ * needed.
  *
  * @category        Naneau
  * @package         Obfuscator

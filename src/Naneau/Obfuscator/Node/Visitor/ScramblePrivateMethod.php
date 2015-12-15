@@ -42,8 +42,8 @@ use PhpParser\Node\Stmt\ClassMethod;
  */
 class ScramblePrivateMethod extends ScramblerVisitor
 {
-    use TrackingRenamerTrait;
     use SkipTrait;
+    use TrackingRenamerTrait;
 
     /**
      * Before node traversal

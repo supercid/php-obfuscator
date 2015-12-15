@@ -124,11 +124,13 @@ class ScrambleComment extends ScramblerVisitor
      * Set preserve annotations in docblocks.
      *
      * @param bool $preserveAnnotations
-     * @return void
+     * @return ScrambleComment
      */
     public function setPreserveAnnotations($preserveAnnotations)
     {
         $this->preserveAnnotations = $preserveAnnotations;
+
+        return $this;
     }
 
     /**

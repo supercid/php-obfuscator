@@ -54,6 +54,17 @@ abstract class User extends Model
     protected $password;
 
     /**
+     * @var string Role of the user.
+     *
+     * @EnumField(choices=[
+     *     "Guest", "Superuser", "Administrator", "User"
+     * ], nullable=false)
+     * @GetSet
+     * @ToArray("public")
+     */
+    protected $role;
+
+    /**
      * @Validator
      */
     public function validateEmailAddress($validator)

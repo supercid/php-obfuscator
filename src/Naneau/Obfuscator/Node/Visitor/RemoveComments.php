@@ -95,7 +95,7 @@ class RemoveComments extends NodeVisitorAbstract
             $stop = strpos($text, "*/");
             $text = trim(substr($text, $start, $stop - $start));
 
-            // Iterate over eacht line and stop removing lines until the first
+            // Iterate over each line and stop removing lines until the first
             // annotation is encountered.
             $lines = explode("\n", $text);
 
@@ -105,6 +105,20 @@ class RemoveComments extends NodeVisitorAbstract
                 }
 
                 array_shift($lines);
+            }
+
+            // Strip the * character from the lines when using generic. Without
+            // stripping this character, some annotations could become invalid.
+            if ($this->annotationsFlavor == "generic") {
+                $lines = array_map(function ($line) {
+                    $index = strpos($line, "*");
+
+                    if ($index !== false) {
+                        return trim(substr($line, $index + 1));
+                    } else {
+                        return $line;
+                    }
+                }, $lines);
             }
 
             // Re-join the lines
@@ -136,7 +150,8 @@ class RemoveComments extends NodeVisitorAbstract
      *
      * Supported flavors:
      * - generic: Text + annotations (using at-sign). Text is removed and all
-     *            newlines are removed.
+     *            newlines are removed. It is assumed that multiple annotations
+     *            can be specified on the same line.
      * - generic-newline: Same as generic, but preserves newlines.
      *
      * @param string $annotationsFlavor

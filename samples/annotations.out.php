@@ -1,9 +1,9 @@
 <?php
-use Phalcon\Mvc\Model as spe4eb26;
-use Phalcon\Validation\Validator\Email as sp4ff688;
-use Phalcon\Validation\Validator\Uniqueness as spf2f00a;
-/**  * @Table(  *   source="users"  * ) */
-abstract class User extends spe4eb26
+use Phalcon\Mvc\Model as sp8dc92b;
+use Phalcon\Validation\Validator\Email as sp3af4f6;
+use Phalcon\Validation\Validator\Uniqueness as sp2848c9;
+/** * @Table(  *   source="users"  * ) */
+abstract class User extends sp8dc92b
 {
     /** * @IntegerField      * @Identity      * @Primary      * @GetSet */
     protected $id;
@@ -16,8 +16,8 @@ abstract class User extends spe4eb26
     /** * @var string The user password.      *      * @StringField(length=128, nullable=false)      * @GetSet */
     protected $password;
     /** * @Validator */
-    public function validateEmailAddress($spf881d9)
+    public function validateEmailAddress($spe54f33)
     {
-        $spf881d9->add('emailAddress', new sp4ff688(array('model' => $this)));
+        $spe54f33->add('emailAddress', new sp3af4f6(array('model' => $this)));
     }
 }

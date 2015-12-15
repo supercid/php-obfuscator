@@ -1,9 +1,8 @@
 <?php
-/**  */
-function calculate($sp94baf7)
+function calculate($spf68512)
 {
-    $sp6f166d = 1;
-    $sp941426 = 2;
-    return $sp6f166d + $sp941426 + $sp94baf7;
+    $sp12f97a = 1;
+    $sp9bb08c = 2;
+    return $sp12f97a + $sp9bb08c + $spf68512;
 }
 echo calculate(5) + calculate(6);

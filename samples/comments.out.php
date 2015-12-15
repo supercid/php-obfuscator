@@ -7,7 +7,7 @@ function bar()
 {
     return 42;
 }
-/**  * @Important but this will not. */
+/** * @Important but this will not. */
 function baz()
 {
     return 42;

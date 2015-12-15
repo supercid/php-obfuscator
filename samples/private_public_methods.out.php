@@ -1,23 +1,25 @@
 <?php
 namespace Test;
 
+use Test\Foo as sp5481cb;
+use Test\Bar as sp691674;
 class Foo
 {
-    public static function invoke(Foo $spbe7fc4)
+    public static function invoke(sp5481cb $sp35dc67)
     {
-        $spbe7fc4->sp54b38c();
-        $sp5745e1 = new Foo();
-        $sp5745e1->sp54b38c();
-        $sp550049 = new Foo();
-        $spa7e26d = $sp550049;
-        $spf100fe = $spa7e26d;
-        $spf100fe->sp54b38c();
-        (new Foo())->sp54b38c();
-        $spa8ed7d = new Bar();
-        $spa8ed7d->call();
-        (new Bar())->call();
+        $sp35dc67->sp54b38c();
+        $spb1d77e = new sp5481cb();
+        $spb1d77e->sp54b38c();
+        $sp2b5a5f = new sp5481cb();
+        $spfd48b7 = $sp2b5a5f;
+        $sp4fcda1 = $spfd48b7;
+        $sp4fcda1->sp54b38c();
+        (new sp5481cb())->sp54b38c();
+        $spa8b50f = new sp691674();
+        $spa8b50f->call();
+        (new sp691674())->call();
     }
-    private function sp54b38c()
+    private function sp8342f4()
     {
         echo 'Foo called!
 ';
@@ -31,4 +33,4 @@ class Bar
 ';
     }
 }
-Foo::invoke(new Foo());
+sp5481cb::invoke(new sp5481cb());

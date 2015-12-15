@@ -17,6 +17,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Namespace_ as NamespaceNode;
+use PhpParser\Node\Stmt\Use_ as UseNode;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -30,13 +31,57 @@ use PhpParser\NodeVisitorAbstract;
  */
 class Meta extends NodeVisitorAbstract
 {
+    /**
+     * @var NamespaceNode The current namespace that is visited.
+     */
     public $namespace;
 
+    /**
+     * @var array Array of use nodes that have been encountered.
+     */
+    public $uses;
+
+    /**
+     * @var UseNode The last use statement that is encountered;
+     */
+    public $use;
+
+    /**
+     * @var ClassNode The current class that is visited.
+     */
     public $class;
 
-    public $scopes = [];
+    /**
+     * @var array An array of scopes.
+     */
+    public $scopes;
 
+    /**
+     * @var mixed Current scope (last one in the list of scopes).
+     */
     public $scope;
+
+    /**
+     * @var Node. The first node
+     */
+    public $root;
+
+    /**
+     * Before node traversal
+     *
+     * @param  Node[] $nodes
+     * @return array
+     **/
+    public function beforeTraverse(array $nodes)
+    {
+        $this->namespace = null;
+        $this->uses = [];
+        $this->use = null;
+        $this->class = null;
+        $this->scopes = [];
+        $this->scope = null;
+        $this->root = null;
+    }
 
     /**
      * Add node meta data.
@@ -46,6 +91,10 @@ class Meta extends NodeVisitorAbstract
      **/
     public function enterNode(Node $node)
     {
+        if (!$this->root) {
+            $this->root = $node;
+        }
+
         if ($node instanceof NamespaceNode) {
             $this->namespace = $node;
         } elseif ($node instanceof ClassNode) {
@@ -70,6 +119,9 @@ class Meta extends NodeVisitorAbstract
                     }
                 }
             }
+        } elseif ($node instanceof UseNode) {
+            $this->use = $node;
+            array_push($this->uses, $this->use);
         }
 
         // Each node gets access to this class.
@@ -77,7 +129,7 @@ class Meta extends NodeVisitorAbstract
     }
 
     /**
-     * Remove node meta data.
+     * Remove node meta data when leaving specific nodes.
      *
      * @param  Node $node
      * @return void
@@ -86,6 +138,8 @@ class Meta extends NodeVisitorAbstract
     {
         if ($node instanceof NamespaceNode) {
             $this->namespace = null;
+            $this->uses = [];
+            $this->use = null;
         } elseif ($node instanceof ClassNode) {
             $this->class = null;
         } elseif ($node instanceof ClassMethod) {

@@ -20,6 +20,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\New_ as NewNode;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -132,7 +133,17 @@ class ScramblePrivateMethod extends ScramblerVisitor
                 }
             }
         } elseif ($node instanceof StaticCall) {
-            // self is always poiting to current class.
+            // Variable refers to class instance, therefore not local.
+            if ($node->class instanceof Variable) {
+                return false;
+            }
+
+            // Something like $array[$key] as class instance is not local.
+            if ($node->class instanceof ArrayDimFetch) {
+                return false;
+            }
+
+            // self is always pointing to current class.
             if ($node->class->toString() === "self") {
                 return true;
             }

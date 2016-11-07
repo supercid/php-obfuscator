@@ -21,7 +21,7 @@ namespace Naneau\Obfuscator;
 class StringScrambler
 {
     /**
-     * Salt
+     * The scrambling salt
      *
      * @return void
      **/

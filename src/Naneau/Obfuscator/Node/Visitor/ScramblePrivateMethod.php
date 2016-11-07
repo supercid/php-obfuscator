@@ -81,7 +81,6 @@ class ScramblePrivateMethod extends ScramblerVisitor
 
         // Scramble calls
         if ($node instanceof MethodCall || $node instanceof StaticCall) {
-
             // Method call or static call is not calling private methods
             if (!$this->hammer && !$this->isLocal($node)) {
                 return;
@@ -202,7 +201,6 @@ class ScramblePrivateMethod extends ScramblerVisitor
             $isPublic = $node instanceof ClassMethod || $node instanceof FunctionNode;
 
             if ($isPrivate || ($this->hammer && $isPublic)) {
-
                 // Record original name and scramble it
                 $originalName = $node->name;
                 $this->scramble($node);

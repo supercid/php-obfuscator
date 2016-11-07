@@ -22,6 +22,8 @@ class Stripping extends \PhpParser\PrettyPrinter\Standard
 {
     protected function pStmts(array $nodes, $indent = true)
     {
+        ($indent);
+        
         $result = parent::pStmts($nodes, false);
 
         return preg_replace('~\n(?!$|' . $this->noIndentToken . ')~', "", $result);

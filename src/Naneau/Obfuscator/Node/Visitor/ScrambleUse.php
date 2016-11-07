@@ -148,7 +148,6 @@ class ScrambleUse extends ScramblerVisitor
             || $node instanceof NewExpression
             || $node instanceof InstanceOfExpression
         ) {
-
             // We need a name
             if (!($node->class instanceof Name)) {
                 return;

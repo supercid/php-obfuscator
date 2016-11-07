@@ -34,14 +34,7 @@ use \InvalidArgumentException;
 class ObfuscateCommand extends Command
 {
     /**
-     * the obfuscator
-     *
-     * @var Obfuscator
-     */
-    private $obfuscator;
-
-    /**
-     * the container
+     * The container
      *
      * @var Container
      */
@@ -122,7 +115,7 @@ class ObfuscateCommand extends Command
         // Show every file
         $this->getObfuscator()->getEventDispatcher()->addListener(
             'obfuscator.file',
-            function(FileEvent $event) use ($output, $directory) {
+            function (FileEvent $event) use ($output, $directory) {
                 $output->writeln(sprintf(
                     'Obfuscating <info>%s</info>',
                     substr($event->getFile(), strlen($directory))
@@ -133,13 +126,14 @@ class ObfuscateCommand extends Command
         if ($ignoreError) {
             $this->getObfuscator()->getEventDispatcher()->addListener(
                 'obfuscator.file.error',
-                function(FileErrorEvent $event) use ($output, $directory) {
+                function (FileErrorEvent $event) use ($output, $directory) {
                     $output->writeln(sprintf(
                         'Error obfuscating <error>%s</error>',
                         substr($event->getFile(), strlen($directory))
                     ));
                     $output->writeln(sprintf(
-                        'Parsing error: <error>%s</error>', $event->getErrorMessage()
+                        'Parsing error: <error>%s</error>',
+                        $event->getErrorMessage()
                     ));
                 }
             );
@@ -196,7 +190,7 @@ class ObfuscateCommand extends Command
     {
         $this->copyDirectory($from, $to);
 
-        if (!is_dir($to))  {
+        if (!is_dir($to)) {
             throw new \Exception('Could not copy directory');
         }
 
@@ -210,19 +204,19 @@ class ObfuscateCommand extends Command
      * @param string $dst
      * @return void
      **/
-    private function copyDirectory($src,$dst)
+    private function copyDirectory($src, $dst)
     {
         $dir = opendir($src);
         @mkdir($dst);
-        while(false !== ( $file = readdir($dir)) ) {
+
+        while (false !== ( $file = readdir($dir))) {
             if (( $file != '.' ) && ( $file != '..' )) {
-                if ( is_dir($src . DIRECTORY_SEPARATOR . $file) ) {
+                if (is_dir($src . DIRECTORY_SEPARATOR . $file)) {
                     $this->copyDirectory(
                         $src . DIRECTORY_SEPARATOR . $file,
                         $dst . '/' . $file
                     );
-                }
-                else {
+                } else {
                     copy(
                         $src . DIRECTORY_SEPARATOR . $file,
                         $dst . DIRECTORY_SEPARATOR . $file
@@ -230,6 +224,7 @@ class ObfuscateCommand extends Command
                 }
             }
         }
+
         closedir($dir);
     }
 

@@ -88,9 +88,7 @@ class RemoveComments extends NodeVisitorAbstract
      */
     private function stripComment($text)
     {
-        if ($this->annotationsFlavor == "generic" ||
-            $this->annotationsFlavor == "generic-newline") {
-
+        if ($this->annotationsFlavor == "generic" || $this->annotationsFlavor == "generic-newline") {
             $start = strpos($text, "/**") + strlen("/**");
             $stop = strpos($text, "*/");
             $text = trim(substr($text, $start, $stop - $start));

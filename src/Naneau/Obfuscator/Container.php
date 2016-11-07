@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 class Container
 {
     /**
-     * the container
+     * The container
      *
      * @var ContainerBuilder
      */

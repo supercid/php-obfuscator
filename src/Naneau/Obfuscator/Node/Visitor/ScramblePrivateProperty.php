@@ -148,7 +148,6 @@ class ScramblePrivateProperty extends ScramblerVisitor
             // Scramble the private method definitions
             if ($node instanceof Property && ($node->type & ClassNode::MODIFIER_PRIVATE)) {
                 foreach ($node->props as $property) {
-
                     // Record original name and scramble it
                     $originalName = $property->name;
                     $this->scramble($property);
@@ -156,7 +155,6 @@ class ScramblePrivateProperty extends ScramblerVisitor
                     // Record renaming
                     $this->renamed($originalName, $property->name);
                 }
-
             }
 
             // Recurse over child nodes

@@ -74,6 +74,8 @@ class Meta extends NodeVisitorAbstract
      **/
     public function beforeTraverse(array $nodes)
     {
+        ($nodes);
+        
         $this->namespace = null;
         $this->uses = [];
         $this->use = null;

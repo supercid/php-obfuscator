@@ -80,7 +80,7 @@ class Obfuscator
      * @param  bool   $ignoreError
      * @return void
      **/
-    public function obfuscate($directory, $stripWhitespace = false, $ignoreError = false)
+    public function obfuscate($directory, $ignoreError = false)
     {
         foreach ($this->getFiles($directory) as $file) {
             $this->getEventDispatcher()->dispatch(
@@ -90,11 +90,6 @@ class Obfuscator
 
             // Write obfuscated source
             file_put_contents($file, $this->obfuscateFileContents($file, $ignoreError));
-
-            // Strip whitespace if required
-            if ($stripWhitespace) {
-                file_put_contents($file, php_strip_whitespace($file));
-            }
         }
     }
 

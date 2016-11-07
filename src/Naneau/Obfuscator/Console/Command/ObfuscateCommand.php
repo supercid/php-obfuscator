@@ -117,7 +117,6 @@ class ObfuscateCommand extends Command
         }
 
         // Strip whitespace?
-        $stripWhitespace = !$input->getOption('leave_whitespace');
         $ignoreError = !!$input->getOption('ignore_error');
 
         // Show every file
@@ -149,7 +148,6 @@ class ObfuscateCommand extends Command
         // Actual obfuscation
         $this->getObfuscator()->obfuscate(
             $directory,
-            $stripWhitespace,
             $ignoreError
         );
     }

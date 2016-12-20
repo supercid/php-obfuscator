@@ -121,10 +121,11 @@ class Meta extends NodeVisitorAbstract
                     }
                 }
             }
-        } elseif ($node instanceof UseNode) {
-            $this->use = $node;
-            array_push($this->uses, $this->use);
-        }
+        } 
+        // elseif ($node instanceof UseNode) {
+            // $this->use = $node;
+            // array_push($this->uses, $this->use);
+        // }
 
         // Each node gets access to this class.
         $node->meta = $this;
@@ -140,8 +141,8 @@ class Meta extends NodeVisitorAbstract
     {
         if ($node instanceof NamespaceNode) {
             $this->namespace = null;
-            $this->uses = [];
-            $this->use = null;
+            // $this->uses = [];
+            // $this->use = null;
         } elseif ($node instanceof ClassNode) {
             $this->class = null;
         } elseif ($node instanceof ClassMethod) {

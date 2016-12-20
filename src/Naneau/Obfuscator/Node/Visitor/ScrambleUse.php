@@ -209,18 +209,18 @@ class ScrambleUse extends ScramblerVisitor
                     }
 
                     // Scramble into new use name
-                    $newName = $this->scrambleString(
-                        $originalName . '-' . $useNode->alias
-                    );
+                    // $newName = $this->scrambleString(
+                    //     $originalName . '-' . $useNode->alias
+                    // );
 
                     // Record renaming of full class
-                    $this->renamed($originalName, $newName);
+                    // $this->renamed($originalName, $newName);
 
                     // Record renaming of alias
-                    $this->renamed($useNode->alias, $newName);
+                    // $this->renamed($useNode->alias, $newName);
 
                     // Set the new alias
-                    $useNode->alias = $newName;
+                    // $useNode->alias = $newName;
                 }
             }
 
@@ -251,50 +251,50 @@ class ScrambleUse extends ScramblerVisitor
         }
 
         // Either add-as-use or fix uses.
-        if ($this->addAsUse) {
+        // if ($this->addAsUse) {
 
-            // Check if there is a existing rename.
-            if (!$this->isRenamed($originalName) || $this->doNotReuse) {
-                $scrambledName = $this->scrambleString($originalName . uniqid());
-                $this->renamed($originalName, $scrambledName);
+        //     // Check if there is a existing rename.
+        //     if (!$this->isRenamed($originalName) || $this->doNotReuse) {
+        //         $scrambledName = $this->scrambleString($originalName . uniqid());
+        //         $this->renamed($originalName, $scrambledName);
 
-                // A new use statement is needed for this rename. Add it to
-                // the current namespace.
-                if ($meta->namespace) {
-                    $key = $meta->namespace->name->toString();
-                } else {
-                    $key = "";
-                }
+        //         // A new use statement is needed for this rename. Add it to
+        //         // the current namespace.
+        //         if ($meta->namespace) {
+        //             $key = $meta->namespace->name->toString();
+        //         } else {
+        //             $key = "";
+        //         }
 
-                if (!isset($this->inserts[$key])) {
-                    $this->inserts[$key] = [];
-                }
+        //         if (!isset($this->inserts[$key])) {
+        //             $this->inserts[$key] = [];
+        //         }
 
-                $this->inserts[$key][] = new UseStatement([
-                    new UseUse(new Name($originalName), $scrambledName)
-                ]);
-            }
+        //         $this->inserts[$key][] = new UseStatement([
+        //             new UseUse(new Name($originalName), $scrambledName)
+        //         ]);
+        //     }
 
-            return new Name($this->getNewName($originalName));
-        } else {
-            // See if (a subset of) parts matches a renamed one. For instance,
-            // A\B\C\D may have A\B renamed, which will eventually lead to
-            // Renamed\C\D.
-            $clonedName = clone $name;
-            $removed = [];
+        //     return new Name($this->getNewName($originalName));
+        // } else {
+        //     // See if (a subset of) parts matches a renamed one. For instance,
+        //     // A\B\C\D may have A\B renamed, which will eventually lead to
+        //     // Renamed\C\D.
+        //     $clonedName = clone $name;
+        //     $removed = [];
 
-            while ($clonedName->parts) {
-                $originalName = $clonedName->toString();
+        //     while ($clonedName->parts) {
+        //         $originalName = $clonedName->toString();
 
-                if ($this->isRenamed($originalName)) {
-                    array_unshift($removed, $this->getNewName($originalName));
-                    return new Name($removed);
-                }
+        //         if ($this->isRenamed($originalName)) {
+        //             array_unshift($removed, $this->getNewName($originalName));
+        //             return new Name($removed);
+        //         }
 
-                // Remove one name from the parts list and try again.
-                $removed[] = array_pop($clonedName->parts);
-            }
-        }
+        //         // Remove one name from the parts list and try again.
+        //         $removed[] = array_pop($clonedName->parts);
+        //     }
+        // }
 
         // No luck.
         return $name;

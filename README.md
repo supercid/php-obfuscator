@@ -1,5 +1,12 @@
 # PHP Obfuscator
 
+
+This fork will be optimized to work with Symfony3.x Projects. The aim is to obfuscate the whole /src folder structure without much tweaking, although some will be always necessary to fit your needs.
+In the future i'll submit a pull request in the original project.
+-- Contributions are always welcome.
+
+Below goes the original README.md file
+
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/naneau/php-obfuscator/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/naneau/php-obfuscator/?branch=master)
 
 This is an "obfuscator" for PSR/OOp PHP code. Different from other obfuscators, which often use a (reversible) `eval()` based obfuscation, this tool actually [parses PHP](https://github.com/nikic/PHP-Parser), and obfuscates variable names, methods, etc. This means is can not be reversed by tools such as [UnPHP](http://www.unphp.net).
